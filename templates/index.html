@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Postfix Studio — Infix → Postfix</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+        }
+
+        .logo-text h1 {
+            font-size: 28px;
+            color: #1a1a1a;
+            font-weight: 600;
+        }
+
+        .logo-text p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        h2 {
+            font-size: 36px;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+        }
+
+        .description {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-section label {
+            display: block;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        .input-box {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            font-family: 'Courier New', monospace;
+            transition: border-color 0.3s;
+            margin-bottom: 15px;
+        }
+
+        .input-box:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .section-title {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .postfix-result-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 25px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .postfix-label {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 14px;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .postfix-value {
+            font-family: 'Courier New', monospace;
+            font-size: 32px;
+            font-weight: 700;
+            color: white;
+            letter-spacing: 2px;
+            min-height: 40px;
+        }
+
+        .empty-postfix {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 18px;
+        }
+
+        .conversion-steps {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 25px;
+            background: #fafafa;
+        }
+
+        .step-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            align-items: center;
+        }
+
+        .step-info {
+            font-size: 15px;
+            color: #666;
+            margin-left: auto;
+            font-weight: 600;
+        }
+
+        .step-display {
+            display: grid;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .step-row {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .step-item-label {
+            font-weight: 700;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .step-item-value {
+            padding: 15px 20px;
+            background: white;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            border: 2px solid #e0e0e0;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+        }
+
+        .token {
+            background: #667eea;
+            color: white;
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 20px;
+        }
+
+        .description-box {
+            background: #e3f2fd;
+            border-left: 5px solid #2196f3;
+            padding: 18px;
+            border-radius: 6px;
+            color: #1565c0;
+            font-size: 15px;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .history-panel h3 {
+            font-size: 20px;
+            color: #1a1a1a;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .history-item {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .history-item:hover {
+            background: #e9ecef;
+            transform: translateX(5px);
+            border-color: #667eea;
+        }
+
+        .history-expression {
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .history-result {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 40px 20px;
+            font-size: 14px;
+        }
+
+        .btn-small {
+            padding: 10px 20px;
+            font-size: 14px;
+        }
+
+        .processing-time {
+            text-align: center;
+            color: #999;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 968px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .step-row {
+                grid-template-columns: 100px 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <div class="logo-icon"></div>
+                <div class="logo-text">
+                    <h1>Postfix Studio</h1>
+                    <p>Infix → Postfix visualizer</p>
+                </div>
+            </div>
+            <h2>Convert Infix expressions to Postfix</h2>
+            <p class="description">Type an expression, click <strong>Convert</strong>, and step through how the algorithm uses a stack to build the postfix form.</p>
+        </div>
+
+        <div class="main-content">
+            <div class="left-panel">
+                <!-- Input Card -->
+                <div class="card">
+                    <div class="input-section">
+                        <label>Enter infix expression</label>
+                        <input type="text" class="input-box" id="expression" placeholder="e.g., 3 + 4 * 2 / ( 1 - 5 ) ^ 2 ^ 3">
+                    </div>
+
+                    <div class="buttons">
+                        <button class="btn btn-primary" onclick="convertExpression()">Convert</button>
+                        <button class="btn btn-secondary" onclick="clearInput()">Clear</button>
+                        <button class="btn btn-secondary" onclick="copyResult()">Copy Postfix</button>
+                    </div>
+                </div>
+
+                <!-- Postfix Result Card -->
+                <div class="card">
+                    <div class="section-title">📊 Postfix Result</div>
+                    <div class="postfix-result-box">
+                        <div class="postfix-label">POSTFIX EXPRESSION</div>
+                        <div class="postfix-value" id="postfixResult">
+                            <span class="empty-postfix">Result will appear here</span>
+                        </div>
+                    </div>
+                    <div class="processing-time" id="processingTime"></div>
+                </div>
+
+                <!-- Conversion Steps Card -->
+                <div class="card">
+                    <div class="section-title">🔄 Conversion Steps</div>
+                    <div class="conversion-steps">
+                        <div class="step-controls">
+                            <button class="btn btn-secondary btn-small" onclick="prevStep()" id="prevBtn" disabled>Prev</button>
+                            <button class="btn btn-primary btn-small" onclick="nextStep()" id="nextBtn" disabled>Next</button>
+                            <button class="btn btn-secondary btn-small" onclick="playSteps()" id="playBtn" disabled>Play</button>
+                            <span class="step-info" id="stepInfo">Step 0/0</span>
+                        </div>
+
+                        <div class="step-display">
+                            <div class="step-row">
+                                <div class="step-item-label">Token:</div>
+                                <div class="step-item-value">
+                                    <span class="token" id="tokenDisplay">—</span>
+                                </div>
+                            </div>
+                            <div class="step-row">
+                                <div class="step-item-label">Stack:</div>
+                                <div class="step-item-value" id="stackDisplay">[]</div>
+                            </div>
+                            <div class="step-row">
+                                <div class="step-item-label">Output:</div>
+                                <div class="step-item-value" id="outputDisplay">[]</div>
+                            </div>
+                        </div>
+
+                        <div class="description-box" id="descriptionDisplay">
+                            Enter an expression and click Convert to see the step-by-step conversion process.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <div class="card history-panel">
+                    <h3>📜 History</h3>
+                    <div id="historyList">
+                        <div class="empty-state">No conversions yet</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSteps = [];
+        let currentStepIndex = 0;
+        let history = [];
+        let playInterval = null;
+
+        function convertExpression() {
+            const expression = document.getElementById('expression').value.trim();
+            
+            if (!expression) {
+                alert('Please enter an expression');
+                return;
+            }
+
+            fetch('http://127.0.0.1:5000/convert', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ expression: expression })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    alert('Error: ' + data.error);
+                    return;
+                }
+
+                currentSteps = data.steps;
+                currentStepIndex = 0;
+
+                document.getElementById('postfixResult').innerHTML = data.postfix || '<span class="empty-postfix">No result</span>';
+                document.getElementById('processingTime').textContent = `Total Steps: ${data.total_steps}`;
+
+                displayStep(0);
+
+                // Enable buttons
+                document.getElementById('nextBtn').disabled = false;
+                document.getElementById('playBtn').disabled = false;
+
+                // Add to history
+                history.unshift({
+                    expression: expression,
+                    postfix: data.postfix
+                });
+                if (history.length > 5) history.pop();
+                updateHistory();
+            })
+            .catch(error => {
+                alert('Error connecting to server: ' + error);
+            });
+        }
+
+        function displayStep(index) {
+            if (index < 0 || index >= currentSteps.length) return;
+
+            const step = currentSteps[index];
+            currentStepIndex = index;
+
+            document.getElementById('tokenDisplay').textContent = step.token;
+            document.getElementById('stackDisplay').textContent = JSON.stringify(step.stack);
+            document.getElementById('outputDisplay').textContent = JSON.stringify(step.output);
+            document.getElementById('descriptionDisplay').textContent = step.description;
+            document.getElementById('stepInfo').textContent = `Step ${step.step}/${currentSteps.length - 1}`;
+
+            document.getElementById('prevBtn').disabled = index === 0;
+            document.getElementById('nextBtn').disabled = index === currentSteps.length - 1;
+        }
+
+        function nextStep() {
+            if (currentStepIndex < currentSteps.length - 1) {
+                displayStep(currentStepIndex + 1);
+            }
+        }
+
+        function prevStep() {
+            if (currentStepIndex > 0) {
+                displayStep(currentStepIndex - 1);
+            }
+        }
+
+        function playSteps() {
+            const playBtn = document.getElementById('playBtn');
+            
+            if (playInterval) {
+                clearInterval(playInterval);
+                playInterval = null;
+                playBtn.textContent = 'Play';
+                return;
+            }
+
+            playBtn.textContent = 'Pause';
+            playInterval = setInterval(() => {
+                if (currentStepIndex < currentSteps.length - 1) {
+                    nextStep();
+                } else {
+                    clearInterval(playInterval);
+                    playInterval = null;
+                    playBtn.textContent = 'Play';
+                    displayStep(0);
+                }
+            }, 1000);
+        }
+
+        function clearInput() {
+            document.getElementById('expression').value = '';
+            document.getElementById('postfixResult').innerHTML = '<span class="empty-postfix">Result will appear here</span>';
+            document.getElementById('processingTime').textContent = '';
+            document.getElementById('tokenDisplay').textContent = '—';
+            document.getElementById('stackDisplay').textContent = '[]';
+            document.getElementById('outputDisplay').textContent = '[]';
+            document.getElementById('descriptionDisplay').textContent = 'Enter an expression and click Convert to see the step-by-step conversion process.';
+            document.getElementById('stepInfo').textContent = 'Step 0/0';
+            document.getElementById('prevBtn').disabled = true;
+            document.getElementById('nextBtn').disabled = true;
+            document.getElementById('playBtn').disabled = true;
+            currentSteps = [];
+            currentStepIndex = 0;
+        }
+
+        function copyResult() {
+            const result = document.getElementById('postfixResult').textContent;
+            if (result && !result.includes('appear here')) {
+                navigator.clipboard.writeText(result);
+                alert('Postfix result copied to clipboard!');
+            }
+        }
+
+        function updateHistory() {
+            const historyList = document.getElementById('historyList');
+            
+            if (history.length === 0) {
+                historyList.innerHTML = '<div class="empty-state">No conversions yet</div>';
+                return;
+            }
+
+            historyList.innerHTML = history.map(item => `
+                <div class="history-item" onclick="loadFromHistory('${item.expression}')">
+                    <div class="history-expression">${item.expression}</div>
+                    <div class="history-result">${item.postfix}</div>
+                </div>
+            `).join('');
+        }
+
+        function loadFromHistory(expression) {
+            document.getElementById('expression').value = expression;
+            convertExpression();
+        }
+
+        // Allow Enter key to convert
+        document.getElementById('expression').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                convertExpression();
+            }
+        });
+    </script>
+</body>
+</html>
