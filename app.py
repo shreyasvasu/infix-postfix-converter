@@ -1,3 +1,7 @@
+import sys
+print(f"Python version: {sys.version}")
+print(f"Python path: {sys.executable}")
+
 from flask import Flask, render_template, request, jsonify
 from flask_cors import CORS
 
